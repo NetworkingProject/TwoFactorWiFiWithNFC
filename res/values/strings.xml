@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">NFC Project</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="write"></string>
+    <string name="write_tag">"Write to tag: "</string>
+    <string name="ssid">SSID</string>
+    <string name="password">Password</string>
+    <string name="wep">WEP</string>
+    <string name="wpa">WPA/WPA2</string>
+    <string name="none">None</string>
+    <string name="write_tag2">Write to tag</string>
+
+</resources>
