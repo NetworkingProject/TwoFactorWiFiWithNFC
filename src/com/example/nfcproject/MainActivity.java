@@ -247,17 +247,23 @@ public class MainActivity extends Activity {
 					}
 
 					//Split result by ":" for "ssid:password"
-					String ssid = result.split(":")[0];
+					String ssid = "";
 					String password = "";
-					if(result.split(":")[1] != null)
-						password = result.split(":")[1];
+					if(result.contains(":")){
+						ssid = result.split(":")[0];
+
+						if(result.split(":").length > 0)
+							password = result.split(":")[1];
+					}
+					else
+						ssid = result;
 					
 					WifiConfiguration conf = new WifiConfiguration();
 					conf.SSID = "\"" + ssid + "\"";
 					conf.status = WifiConfiguration.Status.ENABLED;
 
 					
-					if(isNone) {
+					if(isNone || passField.getText().toString().isEmpty()) {
 						//For open networks
 						conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
 						conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
@@ -413,17 +419,21 @@ public class MainActivity extends Activity {
     }
     
     private NdefMessage getTagAsNdef() {
-		String uniqueId = ssidField.getText().toString() + ":"
-				+ passField.getText().toString();
+    	
+		String uniqueId = ssidField.getText().toString();
+		
+		if(!passField.getText().toString().isEmpty()){
+			uniqueId = uniqueId + ":" + passField.getText().toString();
+		}
 
 		byte[] SSID = uniqueId.getBytes(Charset.forName("US-ASCII"));
 		byte[] payload = new byte[SSID.length + 1];
 		payload[0] = 0x01;
 
-		NdefRecord rtdUriRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
+		NdefRecord rtdTextRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
 				NdefRecord.RTD_TEXT, new byte[0], SSID);
 
-		return new NdefMessage(new NdefRecord[] { rtdUriRecord });
+		return new NdefMessage(new NdefRecord[] { rtdTextRecord });
 
 	}
  
