@@ -58,11 +58,13 @@ public class MainActivity extends Activity {
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		System.out.println("on create");
+
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		
+		// For Toast and WiFi Manager
 		context = getApplicationContext();
 		
 		Intent intent = new Intent(this,
@@ -71,7 +73,7 @@ public class MainActivity extends Activity {
 		
 		mNfcPendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
         
-        IntentFilter discovery=new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+        IntentFilter discovery = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
         IntentFilter ndefDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);        
         IntentFilter techDetected = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
 
@@ -302,13 +304,19 @@ public class MainActivity extends Activity {
 					if(isHidden)
 						conf.hiddenSSID = true;
 
-					WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE); 
+					WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE); 
+					
+					// TODO: Returns -1 on failure. Add error handling.
 					int networkId = wifiManager.addNetwork(conf);
 
+					// TODO: Returns -1 on failure. Add error handling.
 					wifiManager.enableNetwork(networkId, true);
-					wifiManager.reconnect();
+					// Returns true on success
+					boolean success = wifiManager.reconnect();
 
-					Toast.makeText(context,"Tag Contains " + result, Toast.LENGTH_SHORT).show();
+					Toast.makeText(context,"Tag Contains " + result + ". Connected: " + success, Toast.LENGTH_SHORT).show();
+					
+					success = false;
 
 				}
 			}
@@ -335,6 +343,7 @@ public class MainActivity extends Activity {
                 }
 
                 ndef.writeNdefMessage(message);
+                
                 if(writeProtect)  ndef.makeReadOnly();
                 mess = "Wrote message to pre-formatted tag.";
                 return new WriteResponse(1,mess);
@@ -375,27 +384,6 @@ public class MainActivity extends Activity {
     		return message;
     	}
     }
-    
-	public static boolean supportedTechs(String[] techs) {
-	    boolean ultralight=false;
-	    boolean nfcA=false;
-	    boolean ndef=false;
-	    for(String tech:techs) {
-	    	if(tech.equals("android.nfc.tech.MifareUltralight")) {
-	    		ultralight=true;
-	    	}else if(tech.equals("android.nfc.tech.NfcA")) { 
-	    		nfcA=true;
-	    	} else if(tech.equals("android.nfc.tech.Ndef") || tech.equals("android.nfc.tech.NdefFormatable")) {
-	    		ndef=true;
-	   		
-	    	}
-	    }
-        if(ultralight && nfcA && ndef) {
-        	return true;
-        } else {
-        	return false;
-        }
-	}
 	
     private boolean writableTag(Tag tag) {
 

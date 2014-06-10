@@ -45,7 +45,8 @@
         android:layout_alignLeft="@+id/passField"
         android:layout_alignParentTop="true"
         android:layout_marginTop="34dp"
-        android:ems="10" />
+        android:ems="10"
+        android:inputType="text" />
 
     <RadioGroup
         android:id="@+id/radioGroup1"
@@ -82,7 +83,7 @@
         android:layout_alignLeft="@+id/passText"
         android:layout_below="@+id/radioGroup1"
         android:layout_marginTop="15dp"
-        android:text="Hidden Network" />
+        android:text="@string/hidden_network" />
 
     <ToggleButton
         android:id="@+id/toggleButton1"
@@ -90,8 +91,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/checkBox1"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="52dp"
-        android:text="ToggleButton" />
+        android:layout_marginTop="52dp" />
 
     <TextView
         android:id="@+id/textView1"
@@ -100,6 +100,6 @@
         android:layout_below="@+id/checkBox1"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="35dp"
-        android:text="@string/write_tag2" />
+        android:text="@string/write_tag" />
 
 </RelativeLayout>
