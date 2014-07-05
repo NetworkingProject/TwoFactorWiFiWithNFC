@@ -80,104 +80,35 @@ public class MainActivity extends Activity {
 
         // Intent filters for writing to a tag
         mWriteTagFilters = new IntentFilter[] { ndefDetected, discovery, techDetected };
-		
+
 		ssidField = (EditText) findViewById(R.id.ssidField);
 		ssidText = (TextView) findViewById(R.id.ssidText);
-		
+
 		passField = (EditText) findViewById(R.id.passField);
 		passField.setVisibility(View.INVISIBLE);
 		passText = (TextView) findViewById(R.id.passText);
 		passText.setVisibility(View.INVISIBLE);
-		
+
 		isHiddenButton = (CheckBox) findViewById(R.id.checkBox1);
 		isHiddenButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			
+
 			@Override
 			public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
 				isHidden = isChecked;
 			}
 		});
-		
+
 		noneRadio = (RadioButton) findViewById(R.id.none);		
 		wepRadio = (RadioButton) findViewById(R.id.wep);		
 		wpaRadio = (RadioButton) findViewById(R.id.wpa);
-	
-		buttonGroup = (RadioGroup) findViewById(R.id.radioGroup1);
-		buttonGroup.setOnCheckedChangeListener(new OnCheckedChangeListener(){
 
-			@Override
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				isNone = noneRadio.isChecked();
-				isWEP = wepRadio.isChecked();
-				isWPA = wpaRadio.isChecked();
-				
-				if(noneRadio.isChecked()){
-					passField.setVisibility(View.INVISIBLE);
-					passText.setVisibility(View.INVISIBLE);					
-				}
-				if(wepRadio.isChecked()){
-					
-					passField.setVisibility(View.VISIBLE);
-					passText.setVisibility(View.VISIBLE);
-				}
-				if(wpaRadio.isChecked()){
-					passField.setVisibility(View.VISIBLE);
-					passText.setVisibility(View.VISIBLE);
-				}
-			}
-			
-		});
 		
-		ToggleButton toggle = (ToggleButton) findViewById(R.id.toggleButton1);
-		toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				isWrite = isChecked;
-				if(isWrite){
-					ssidField.setVisibility(View.VISIBLE);
-					ssidText.setVisibility(View.VISIBLE);
-					passField.setVisibility(View.VISIBLE);
-					passText.setVisibility(View.VISIBLE);
-					buttonGroup.setVisibility(View.VISIBLE);
-					isHiddenButton.setVisibility(View.VISIBLE);
-				}
-				else{
-					ssidField.setVisibility(View.INVISIBLE);
-					ssidText.setVisibility(View.INVISIBLE);
-					passField.setVisibility(View.INVISIBLE);
-					passText.setVisibility(View.INVISIBLE);
-					buttonGroup.setVisibility(View.INVISIBLE);
-					isHiddenButton.setVisibility(View.INVISIBLE);
-				}
-			}
-		});
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
-	    switch(item.getItemId()){
-	    case R.id.action_admin:
-	        Intent intent = new Intent(MainActivity.this, WriteToTag.class);
-	        startActivity(intent);
-	        return true;  
-	    case R.id.action_settings:
-	        // TODO: Add settings menu or remove menu
-	        return true;   
-	    }
-		    
-	    return false;
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+		
 		if (mNfcAdapter != null) {
 			
 			if (!mNfcAdapter.isEnabled()) {
@@ -225,217 +156,122 @@ public class MainActivity extends Activity {
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 
-		if(isWrite){
-			if(NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
-	        	// validate that this tag can be written....
-				Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+		// Read and parse tag
+		if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
 
-				// check if tag is writable (to the extent that we can
-				if(writableTag(detectedTag)) {
-					//writeTag here
-					WriteResponse wr = writeTag(getTagAsNdef(), detectedTag);
-					String message = (wr.getStatus() == 1? "Success: " : "Failed: ") + wr.getMessage();
-					Toast.makeText(context,message,Toast.LENGTH_SHORT).show();
-				} else {
-					Toast.makeText(context,"This tag is not writable",Toast.LENGTH_SHORT).show();
-
-				}	            
-	        }
-		}
-		else{
-			if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
-
-				NdefMessage[] messages = null;
-				Parcelable[] rawMsgs = intent
-						.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-				if (rawMsgs != null) {
-					messages = new NdefMessage[rawMsgs.length];
-					for (int i = 0; i < rawMsgs.length; i++) {
-						messages[i] = (NdefMessage) rawMsgs[i];
-					}
-				}
-				if (messages[0] != null) {
-					String result = "";
-					byte[] payload = messages[0].getRecords()[0].getPayload();
-					// this assumes that we get back am SOH followed by host/code
-					for (int b = 0; b < payload.length; b++) { // skip SOH
-						result += (char) payload[b];
-					}
-
-					//Split result by ":" for "ssid:password"
-					String ssid = "";
-					String password = "";
-					if(result.contains(":")){
-						ssid = result.split(":")[0];
-
-						if(result.split(":").length > 0)
-							password = result.split(":")[1];
-					}
-					else
-						ssid = result;
-					
-					WifiConfiguration conf = new WifiConfiguration();
-					conf.SSID = "\"" + ssid + "\"";
-					conf.status = WifiConfiguration.Status.ENABLED;
-
-					
-					if(isNone || passField.getText().toString().isEmpty()) {
-						//For open networks
-						conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-						conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-					}
-					else if(isWEP || isWPA) {
-						conf.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-						conf.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
-						conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-						conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-						conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-						conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-						
-						if(isWEP){		
-							//For WEP networks							
-							conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-							conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-							conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
-							conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-							conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-
-							conf.wepKeys[0] = "\"".concat(password).concat("\"");
-							conf.wepTxKeyIndex = 0;
-						}
-						else if(isWPA){
-							//For WPA and WPA2 networks
-							conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-							conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-							conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-
-							conf.preSharedKey = "\"" + password + "\"";
-						}						
-					}
-					
-					
-					//For hidden networks
-					if(isHidden)
-						conf.hiddenSSID = true;
-
-					WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE); 
-					
-					// TODO: Returns -1 on failure. Add error handling.
-					int networkId = wifiManager.addNetwork(conf);
-
-					// TODO: Returns -1 on failure. Add error handling.
-					wifiManager.enableNetwork(networkId, true);
-					// Returns true on success
-					wifiManager.reconnect();
-
-					Toast.makeText(context,"Tag Contains " + result, Toast.LENGTH_SHORT).show();
-
+			NdefMessage[] messages = null;
+			Parcelable[] rawMsgs = intent
+					.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+			if (rawMsgs != null) {
+				messages = new NdefMessage[rawMsgs.length];
+				for (int i = 0; i < rawMsgs.length; i++) {
+					messages[i] = (NdefMessage) rawMsgs[i];
 				}
 			}
+			if (messages[0] != null) {
+				String result = "";
+				byte[] payload = messages[0].getRecords()[0].getPayload();
+				// this assumes that we get back am SOH followed by host/code
+				for (int b = 0; b < payload.length; b++) { // skip SOH
+					result += (char) payload[b];
+				}
 
-		}}
-	
-	public WriteResponse writeTag(NdefMessage message, Tag tag) {
-        int size = message.toByteArray().length;
-        String mess = "";
+				//Split result by ":" for "ssid:password"
+				String ssid = "";
+				String password = "";
+				if(result.contains(":")){
+					ssid = result.split(":")[0];
 
-        try {
-            Ndef ndef = Ndef.get(tag);
-            if (ndef != null) {
-                ndef.connect();
+					if(result.split(":").length > 0)
+						password = result.split(":")[1];
+				}
+				else
+					ssid = result;
+				
+				WifiConfiguration conf = ConfigureWifi(ssid, password);
+				
+				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE); 
+				
+				// TODO: Returns -1 on failure. Add error handling.
+				int networkId = wifiManager.addNetwork(conf);
 
-                if (!ndef.isWritable()) {
-                    return new WriteResponse(0,"Tag is read-only");
+				// TODO: Returns -1 on failure. Add error handling.
+				wifiManager.enableNetwork(networkId, true);
+				// Returns true on success
+				wifiManager.reconnect();
 
-                }
-                if (ndef.getMaxSize() < size) {
-                    mess = "Tag capacity is " + ndef.getMaxSize() + " bytes, message is " + size
-                            + " bytes.";
-                    return new WriteResponse(0,mess);
-                }
+				Toast.makeText(context,"Tag Contains " + result, Toast.LENGTH_SHORT).show();
 
-                ndef.writeNdefMessage(message);
-                
-                if(writeProtect)  ndef.makeReadOnly();
-                mess = "Wrote message to pre-formatted tag.";
-                return new WriteResponse(1,mess);
-            } else {
-                NdefFormatable format = NdefFormatable.get(tag);
-                if (format != null) {
-                    try {
-                        format.connect();
-                        format.format(message);
-                        mess = "Formatted tag and wrote message";
-                        return new WriteResponse(1,mess);
-                    } catch (IOException e) {
-                        mess = "Failed to format tag.";
-                        return new WriteResponse(0,mess);
-                    }
-                } else {
-                    mess = "Tag doesn't support NDEF.";
-                    return new WriteResponse(0,mess);
-                }
-            }
-        } catch (Exception e) {
-            mess = "Failed to write tag";
-            return new WriteResponse(0,mess);
-        }
-    }
-    
-    private class WriteResponse {
-    	int status;
-    	String message;
-    	WriteResponse(int Status, String Message) {
-    		this.status = Status;
-    		this.message = Message;
-    	}
-    	public int getStatus() {
-    		return status;
-    	}
-    	public String getMessage() {
-    		return message;
-    	}
-    }
-	
-    private boolean writableTag(Tag tag) {
-
-        try {
-            Ndef ndef = Ndef.get(tag);
-            if (ndef != null) {
-                ndef.connect();
-                if (!ndef.isWritable()) {
-                    Toast.makeText(context,"Tag is read-only.",Toast.LENGTH_SHORT).show();
-                    ndef.close(); 
-                    return false;
-                }
-                ndef.close();
-                return true;
-            } 
-        } catch (Exception e) {
-            Toast.makeText(context,"Failed to read tag",Toast.LENGTH_SHORT).show();
-        }
-
-        return false;
-    }
-    
-    private NdefMessage getTagAsNdef() {
-    	
-		String uniqueId = ssidField.getText().toString();
-		String currentPass = passField.getText().toString();
-		
-		if(!currentPass.isEmpty()){
-			uniqueId += ":" + currentPass;
+			}
 		}
-
-		byte[] SSID = uniqueId.getBytes(Charset.forName("US-ASCII"));
-		byte[] payload = new byte[SSID.length + 1];
-		payload[0] = 0x01;
-
-		NdefRecord rtdTextRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
-				NdefRecord.RTD_TEXT, new byte[0], SSID);
-
-		return new NdefMessage(new NdefRecord[] { rtdTextRecord });
-
 	}
- 
+	
+	public WifiConfiguration ConfigureWifi(String ssid, String password) {
+		
+		WifiConfiguration conf = new WifiConfiguration();
+		conf.SSID = "\"" + ssid + "\"";
+		conf.status = WifiConfiguration.Status.ENABLED;
+
+		
+		if(isNone || passField.getText().toString().isEmpty()) {
+			//For open networks
+			conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+			conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+		}
+		else if(isWEP || isWPA) {
+			conf.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+			conf.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+			
+			if(isWEP){		
+				//For WEP networks							
+				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+
+				conf.wepKeys[0] = "\"".concat(password).concat("\"");
+				conf.wepTxKeyIndex = 0;
+			}
+			else if(isWPA){
+				//For WPA and WPA2 networks
+				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+
+				conf.preSharedKey = "\"" + password + "\"";
+			}						
+		}
+		
+		//For hidden networks
+		if(isHidden)
+			conf.hiddenSSID = true;
+
+		return conf;
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+	    switch(item.getItemId()){
+	    case R.id.action_admin:
+	        Intent intent = new Intent(MainActivity.this, WriteToTag.class);
+	        startActivity(intent);
+	        return true;  
+	    case R.id.action_settings:
+	        // TODO: Add settings menu or remove menu
+	        return true;   
+	    }
+		    
+	    return false;
+	}
 }

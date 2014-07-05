@@ -13,5 +13,11 @@
     <string name="write_tag">Write to tag</string>
     <string name="hidden_network">Hidden Network</string>
     <string name="title_activity_write_to_tag">WriteToTag</string>
+    <string-array name="eap_methods">
+        <item>None</item>
+        <item>WEP</item>
+        <item>WPA/WPA2 PSK</item>
+        <item>802.1x EAP</item>
+    </string-array>
 
 </resources>
