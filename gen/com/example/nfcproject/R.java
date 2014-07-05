@@ -13,6 +13,11 @@ public final class R {
     public static final class dimen {
         /**  Default screen margins, per the Android Design guidelines. 
 
+         Example customization of dimensions originally defined in res/values/dimens.xml
+         (such as screen margins) for screens with more than 820dp of available width. This
+         would include 7" and 10" devices in landscape (~960dp and ~1280dp respectively).
+    
+
          Customize dimensions originally defined in res/values/dimens.xml (such as
          screen margins) for sw720dp devices (e.g. 10" tablets) in landscape here.
     
@@ -25,8 +30,10 @@ public final class R {
         public static final int ic_launcher=0x7f020001;
     }
     public static final class id {
-        public static final int action_settings=0x7f08000c;
+        public static final int action_admin=0x7f08000e;
+        public static final int action_settings=0x7f08000d;
         public static final int checkBox1=0x7f080007;
+        public static final int container=0x7f08000c;
         public static final int nfc_settings_layout=0x7f080000;
         public static final int none=0x7f080008;
         public static final int passField=0x7f080003;
@@ -41,21 +48,26 @@ public final class R {
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
+        public static final int activity_write_to_tag=0x7f030001;
+        public static final int fragment_write_to_tag=0x7f030002;
     }
     public static final class menu {
         public static final int main=0x7f070000;
+        public static final int write_to_tag=0x7f070001;
     }
     public static final class string {
-        public static final int action_settings=0x7f050001;
+        public static final int admin=0x7f050002;
         public static final int app_name=0x7f050000;
-        public static final int hidden_network=0x7f050009;
-        public static final int none=0x7f050007;
-        public static final int password=0x7f050004;
-        public static final int ssid=0x7f050003;
-        public static final int wep=0x7f050005;
-        public static final int wpa=0x7f050006;
-        public static final int write=0x7f050002;
-        public static final int write_tag=0x7f050008;
+        public static final int hidden_network=0x7f05000a;
+        public static final int none=0x7f050008;
+        public static final int password=0x7f050005;
+        public static final int settings=0x7f050001;
+        public static final int ssid=0x7f050004;
+        public static final int title_activity_write_to_tag=0x7f05000b;
+        public static final int wep=0x7f050006;
+        public static final int wpa=0x7f050007;
+        public static final int write=0x7f050003;
+        public static final int write_tag=0x7f050009;
     }
     public static final class style {
         /** 

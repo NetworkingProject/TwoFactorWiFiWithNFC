@@ -23,6 +23,7 @@ import android.os.Parcelable;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -82,9 +83,9 @@ public class MainActivity extends Activity {
 		
 		ssidField = (EditText) findViewById(R.id.ssidField);
 		ssidText = (TextView) findViewById(R.id.ssidText);
+		
 		passField = (EditText) findViewById(R.id.passField);
 		passField.setVisibility(View.INVISIBLE);
-		
 		passText = (TextView) findViewById(R.id.passText);
 		passText.setVisibility(View.INVISIBLE);
 		
@@ -101,7 +102,6 @@ public class MainActivity extends Activity {
 		wepRadio = (RadioButton) findViewById(R.id.wep);		
 		wpaRadio = (RadioButton) findViewById(R.id.wpa);
 	
-		
 		buttonGroup = (RadioGroup) findViewById(R.id.radioGroup1);
 		buttonGroup.setOnCheckedChangeListener(new OnCheckedChangeListener(){
 
@@ -150,7 +150,6 @@ public class MainActivity extends Activity {
 					buttonGroup.setVisibility(View.INVISIBLE);
 					isHiddenButton.setVisibility(View.INVISIBLE);
 				}
-				
 			}
 		});
 	}
@@ -159,6 +158,21 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+	    switch(item.getItemId()){
+	    case R.id.action_admin:
+	        Intent intent = new Intent(MainActivity.this, WriteToTag.class);
+	        startActivity(intent);
+	        return true;  
+	    case R.id.action_settings:
+	        // TODO: Add settings menu or remove menu
+	        return true;   
+	    }
+		    
+	    return false;
 	}
 
 	@Override
@@ -312,11 +326,9 @@ public class MainActivity extends Activity {
 					// TODO: Returns -1 on failure. Add error handling.
 					wifiManager.enableNetwork(networkId, true);
 					// Returns true on success
-					boolean success = wifiManager.reconnect();
+					wifiManager.reconnect();
 
-					Toast.makeText(context,"Tag Contains " + result + ". Connected: " + success, Toast.LENGTH_SHORT).show();
-					
-					success = false;
+					Toast.makeText(context,"Tag Contains " + result, Toast.LENGTH_SHORT).show();
 
 				}
 			}
@@ -409,9 +421,10 @@ public class MainActivity extends Activity {
     private NdefMessage getTagAsNdef() {
     	
 		String uniqueId = ssidField.getText().toString();
+		String currentPass = passField.getText().toString();
 		
-		if(!passField.getText().toString().isEmpty()){
-			uniqueId = uniqueId + ":" + passField.getText().toString();
+		if(!currentPass.isEmpty()){
+			uniqueId += ":" + currentPass;
 		}
 
 		byte[] SSID = uniqueId.getBytes(Charset.forName("US-ASCII"));

@@ -2,7 +2,8 @@
 <resources>
 
     <string name="app_name">NFC Project</string>
-    <string name="action_settings">Settings</string>
+    <string name="settings">Settings</string>
+    <string name="admin">Admin</string>
     <string name="write"></string>
     <string name="ssid">SSID</string>
     <string name="password">Password</string>
@@ -11,5 +12,6 @@
     <string name="none">None</string>
     <string name="write_tag">Write to tag</string>
     <string name="hidden_network">Hidden Network</string>
+    <string name="title_activity_write_to_tag">WriteToTag</string>
 
 </resources>
