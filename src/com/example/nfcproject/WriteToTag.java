@@ -1,7 +1,10 @@
 package com.example.nfcproject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
+import java.util.BitSet;
 
 import android.app.Activity;
 import android.app.ActionBar;
@@ -26,6 +29,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -53,6 +57,12 @@ public class WriteToTag extends Activity {
 	private boolean isHidden;
 	private boolean writeProtect;
 	private boolean isNone, isWEP, isWPA = false;
+	private boolean isTwoFac = false;
+	private CheckBox isTwoFacButton;
+	private EditText twoFacPwField;
+	private EditText routerPwField;
+	private Button pwGenButton;
+	private Button copyButton;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,12 +92,35 @@ public class WriteToTag extends Activity {
 		passField = (EditText) findViewById(R.id.passField);
 		
 		eap_spinner = (Spinner) findViewById(R.id.eap_spinner);
+		
+		twoFacPwField = (EditText) findViewById(R.id.two_fac_pw_field);
+		routerPwField = (EditText) findViewById(R.id.router_pw_field);
+		pwGenButton = (Button) findViewById(R.id.pw_gen_button);
+		copyButton = (Button) findViewById(R.id.copy_button);
+		
 				
 		isHiddenButton = (CheckBox) findViewById(R.id.isHiddenCheckBox);
 		isHiddenButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
 				isHidden = isChecked;
+			}
+		});
+		
+		isTwoFacButton = (CheckBox) findViewById(R.id.isTwoFactorCheckBox);
+		isTwoFacButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
+				isTwoFac = isChecked;
+				int vis = View.GONE;
+				if (isChecked)
+				{
+					vis = View.VISIBLE;
+				}
+				twoFacPwField.setVisibility(vis);
+				routerPwField.setVisibility(vis);
+				pwGenButton.setVisibility(vis);
+				copyButton.setVisibility(vis);
 			}
 		});
 		
@@ -255,6 +288,22 @@ public class WriteToTag extends Activity {
 		
 		Parcel parcel = Parcel.obtain();
 		config.writeToParcel(parcel, 0);
+		
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+        ObjectOutputStream o = null;
+		try {
+			o = new ObjectOutputStream(b);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        try {
+			o.writeObject(parcel);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+      
 		byte[] bytes = parcel.marshall();
 		parcel.recycle();
 		
@@ -269,23 +318,39 @@ public class WriteToTag extends Activity {
 
 	}
     
+	private static void writeBitSet(Parcel dest, BitSet set) {
+		int nextSetBit = -1;
+		
+		dest.writeInt(set.cardinality());
+		
+		while ((nextSetBit = set.nextSetBit(nextSetBit + 1)) != -1)
+					dest.writeInt(nextSetBit);
+	}
+    
     public WifiConfiguration ConfigureWifi(String ssid, String password) {
 		
 		WifiConfiguration conf = new WifiConfiguration() {
-			@Override
-			public void writeToParcel(Parcel dest, int flags) {
-				dest.writeInt(networkId);
-				dest.writeInt(status);
-				dest.writeString(SSID);
-				dest.writeString(BSSID);
-				dest.writeString(preSharedKey);
-				for (String wepKey : wepKeys)
-					dest.writeString(wepKey);
-				dest.writeInt(wepTxKeyIndex);
-				dest.writeInt(priority);
-				dest.writeInt(hiddenSSID ? 1 : 0);
-			}
+//			@Override
+//			public void writeToParcel(Parcel dest, int flags) {
+//				dest.writeInt(networkId);
+//				dest.writeInt(status);
+//				dest.writeString(SSID);
+//				dest.writeString(BSSID);
+//				dest.writeString(preSharedKey);
+//				for (String wepKey : wepKeys)
+//					dest.writeString(wepKey);
+//				dest.writeInt(wepTxKeyIndex);
+//				dest.writeInt(priority);
+//				dest.writeInt(hiddenSSID ? 1 : 0);
+//				
+//				writeBitSet(dest, allowedKeyManagement);
+//				writeBitSet(dest, allowedProtocols);
+//				writeBitSet(dest, allowedAuthAlgorithms);
+//				writeBitSet(dest, allowedPairwiseCiphers);
+//				writeBitSet(dest, allowedGroupCiphers);
+//			}
 		};
+		
 		conf.SSID = "\"" + ssid + "\"";
 		conf.status = WifiConfiguration.Status.ENABLED;
 

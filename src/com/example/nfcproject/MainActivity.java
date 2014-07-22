@@ -19,6 +19,7 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.Settings;
 import android.view.LayoutInflater;
@@ -171,6 +172,14 @@ public class MainActivity extends Activity {
 			if (messages[0] != null) {
 				String result = "";
 				byte[] payload = messages[0].getRecords()[0].getPayload();
+				
+				Parcel parcel = Parcel.obtain();
+		        parcel.unmarshall(payload, 0, payload.length);
+		        parcel.setDataPosition(0);
+		        WifiConfiguration conf = parcel.readParcelable(WifiConfiguration.class.getClassLoader());
+		        parcel.recycle();
+		        
+				
 				// this assumes that we get back am SOH followed by host/code
 				for (int b = 0; b < payload.length; b++) { // skip SOH
 					result += (char) payload[b];
@@ -188,7 +197,7 @@ public class MainActivity extends Activity {
 				else
 					ssid = result;
 				
-				WifiConfiguration conf = ConfigureWifi(ssid, password);
+				//WifiConfiguration conf = ConfigureWifi(ssid, password);
 				
 				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE); 
 				
@@ -205,6 +214,12 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
+	
+//	public static WifiConfiguration UnmarshallPackage(byte[] bytes) {
+//		Parcel parcel = Parcel.obtain();
+//		parcel.unmarshall(bytes, 0, bytes.length);
+//		parcel.setDataPosition(0);
+//	}
 	
 	public WifiConfiguration ConfigureWifi(String ssid, String password) {
 		

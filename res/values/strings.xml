@@ -19,5 +19,10 @@
         <item>WPA/WPA2 PSK</item>
         <item>802.1x EAP</item>
     </string-array>
+    <string name="two_fac_auth">Two-Factor Authentication</string>
+    <string name="two_fac_pw">Two-Factor Password</string>
+    <string name="pw_gen_button_prompt">Generate New Router Password</string>
+    <string name="router_pw_prompt">New Router Password</string>
+    <string name="copy_button_desc">Copy New Router Password</string>
 
 </resources>
