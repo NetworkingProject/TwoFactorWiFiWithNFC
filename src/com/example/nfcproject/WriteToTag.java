@@ -11,10 +11,13 @@ import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.PendingIntent;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.net.wifi.WifiConfiguration;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -29,12 +32,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,14 +61,17 @@ public class WriteToTag extends Activity {
 	private Spinner eap_spinner;
 	private String eap_val;
 	private boolean isHidden;
-	private boolean writeProtect;
+	private boolean isWrite = false;
+	private boolean writeProtect = false;
 	private boolean isNone, isWEP, isWPA = false;
 	private boolean isTwoFac = false;
 	private CheckBox isTwoFacButton;
 	private EditText twoFacPwField;
 	private EditText routerPwField;
 	private Button pwGenButton;
-	private Button copyButton;
+	private ImageButton copyButton;
+	private RelativeLayout twoFacLayout;
+	private ToggleButton isWriteButton;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -92,11 +101,25 @@ public class WriteToTag extends Activity {
 		passField = (EditText) findViewById(R.id.passField);
 		
 		eap_spinner = (Spinner) findViewById(R.id.eap_spinner);
+		eap_spinner.setSelection(2); // WPA/WPA2 PSK
 		
+		
+		twoFacLayout = (RelativeLayout) findViewById(R.id.twoFacLayout);
+		twoFacLayout.setVisibility(View.GONE);
 		twoFacPwField = (EditText) findViewById(R.id.two_fac_pw_field);
 		routerPwField = (EditText) findViewById(R.id.router_pw_field);
 		pwGenButton = (Button) findViewById(R.id.pw_gen_button);
-		copyButton = (Button) findViewById(R.id.copy_button);
+		copyButton = (ImageButton) findViewById(R.id.copy_button);
+		copyButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				ClipboardManager clipboard = (ClipboardManager)   getSystemService(Context.CLIPBOARD_SERVICE);
+			    ClipData clip = ClipData.newPlainText("Copied", routerPwField.getText());
+			    clipboard.setPrimaryClip(clip);
+			    Toast.makeText(getApplicationContext(), "Text copied to clipboard", Toast.LENGTH_SHORT).show();
+			}
+		});
 		
 				
 		isHiddenButton = (CheckBox) findViewById(R.id.isHiddenCheckBox);
@@ -117,12 +140,20 @@ public class WriteToTag extends Activity {
 				{
 					vis = View.VISIBLE;
 				}
-				twoFacPwField.setVisibility(vis);
-				routerPwField.setVisibility(vis);
-				pwGenButton.setVisibility(vis);
-				copyButton.setVisibility(vis);
+				twoFacLayout.setVisibility(vis);
 			}
 		});
+		
+		isWriteButton = (ToggleButton) findViewById(R.id.isWriteButton);
+		isWriteButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				isWrite = isChecked;
+			}
+		}
+		
+		);
 		
 	}
 
@@ -176,19 +207,22 @@ public class WriteToTag extends Activity {
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 
-		if(NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
-        	// validate that this tag can be written....
-			Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-
-			// check if tag is writable (to the extent that we can
-			if(writableTag(detectedTag)) {
-				//writeTag here
-				WriteResponse wr = writeTag(getTagAsNdef(), detectedTag);
-				String message = (wr.getStatus() == 1? "Success: " : "Failed: ") + wr.getMessage();
-				Toast.makeText(context,message,Toast.LENGTH_SHORT).show();
-			} else {
-				Toast.makeText(context,"This tag is not writable",Toast.LENGTH_SHORT).show();
-			}	            
+		if(isWrite){
+			
+			if(NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
+	        	// validate that this tag can be written....
+				Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+	
+				// check if tag is writable (to the extent that we can
+				if(writableTag(detectedTag)) {
+					//writeTag here
+					WriteResponse wr = writeTag(getTagAsNdef(), detectedTag);
+					String message = (wr.getStatus() == 1? "Success: " : "Failed: ") + wr.getMessage();
+					Toast.makeText(context,message,Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(context,"This tag is not writable",Toast.LENGTH_SHORT).show();
+				}	            
+			}
 		}
 	}
 	
