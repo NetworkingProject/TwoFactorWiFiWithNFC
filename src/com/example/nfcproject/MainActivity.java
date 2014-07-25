@@ -42,21 +42,10 @@ public class MainActivity extends Activity {
     private IntentFilter[] mWriteTagFilters;
 	private PendingIntent mNfcPendingIntent;
 	private boolean isWrite = false;
-	private boolean writeProtect = false;
+	private boolean isTwoFac = false;
 	private Context context;
-	private EditText ssidField;
-	private TextView ssidText;
-	private EditText passField;
-	private TextView passText;
-	private CheckBox isHiddenButton;
-	private boolean isHidden;
-	private RadioGroup buttonGroup;
-	private RadioButton noneRadio;
-	private boolean isNone;
-	private RadioButton wepRadio;
-	private boolean isWEP;
-	private RadioButton wpaRadio;
-	private boolean isWPA;
+	private CheckBox isTwoFacCheckBox;
+	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -82,28 +71,15 @@ public class MainActivity extends Activity {
         // Intent filters for writing to a tag
         mWriteTagFilters = new IntentFilter[] { ndefDetected, discovery, techDetected };
 
-		ssidField = (EditText) findViewById(R.id.ssidField);
-		ssidText = (TextView) findViewById(R.id.ssidText);
-
-		passField = (EditText) findViewById(R.id.passField);
-		passField.setVisibility(View.INVISIBLE);
-		passText = (TextView) findViewById(R.id.passText);
-		passText.setVisibility(View.INVISIBLE);
-
-		isHiddenButton = (CheckBox) findViewById(R.id.checkBox1);
-		isHiddenButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+		isTwoFacCheckBox = (CheckBox) findViewById(R.id.readScreenTwoFac);
+		isTwoFacCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
 			@Override
 			public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-				isHidden = isChecked;
+				isTwoFac = isChecked;
 			}
 		});
 
-		noneRadio = (RadioButton) findViewById(R.id.none);		
-		wepRadio = (RadioButton) findViewById(R.id.wep);		
-		wpaRadio = (RadioButton) findViewById(R.id.wpa);
-
-		
 	}
 
 	@Override
@@ -221,53 +197,53 @@ public class MainActivity extends Activity {
 //		parcel.setDataPosition(0);
 //	}
 	
-	public WifiConfiguration ConfigureWifi(String ssid, String password) {
-		
-		WifiConfiguration conf = new WifiConfiguration();
-		conf.SSID = "\"" + ssid + "\"";
-		conf.status = WifiConfiguration.Status.ENABLED;
-
-		
-		if(isNone || passField.getText().toString().isEmpty()) {
-			//For open networks
-			conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-			conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-		}
-		else if(isWEP || isWPA) {
-			conf.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-			conf.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
-			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-			
-			if(isWEP){		
-				//For WEP networks							
-				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
-				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-
-				conf.wepKeys[0] = "\"".concat(password).concat("\"");
-				conf.wepTxKeyIndex = 0;
-			}
-			else if(isWPA){
-				//For WPA and WPA2 networks
-				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-
-				conf.preSharedKey = "\"" + password + "\"";
-			}						
-		}
-		
-		//For hidden networks
-		if(isHidden)
-			conf.hiddenSSID = true;
-
-		return conf;
-	}
+//	public WifiConfiguration ConfigureWifi(String ssid, String password) {
+//		
+//		WifiConfiguration conf = new WifiConfiguration();
+//		conf.SSID = "\"" + ssid + "\"";
+//		conf.status = WifiConfiguration.Status.ENABLED;
+//
+//		
+//		if(isNone || passField.getText().toString().isEmpty()) {
+//			//For open networks
+//			conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+//			conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+//		}
+//		else if(isWEP || isWPA) {
+//			conf.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+//			conf.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+//			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+//			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+//			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+//			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+//			
+//			if(isWEP){		
+//				//For WEP networks							
+//				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+//				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+//				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+//				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+//				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+//
+//				conf.wepKeys[0] = "\"".concat(password).concat("\"");
+//				conf.wepTxKeyIndex = 0;
+//			}
+//			else if(isWPA){
+//				//For WPA and WPA2 networks
+//				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+//				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+//				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+//
+//				conf.preSharedKey = "\"" + password + "\"";
+//			}						
+//		}
+//		
+//		//For hidden networks
+//		if(isHidden)
+//			conf.hiddenSSID = true;
+//
+//		return conf;
+//	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

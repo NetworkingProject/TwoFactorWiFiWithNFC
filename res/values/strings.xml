@@ -24,5 +24,6 @@
     <string name="pw_gen_button_prompt">Generate New Router Password</string>
     <string name="router_pw_prompt">New Router Password</string>
     <string name="copy_button_desc">Copy New Router Password</string>
+    <string name="read_screen_prompt">Connect to NFC tag at any time</string>
 
 </resources>

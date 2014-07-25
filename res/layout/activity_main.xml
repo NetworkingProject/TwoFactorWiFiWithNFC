@@ -3,7 +3,7 @@
     android:id="@+id/nfc_settings_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="end"
+    android:gravity="center"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -11,95 +11,46 @@
     tools:context=".MainActivity" >
 
     <TextView
-        android:id="@+id/ssidText"
+        android:id="@+id/readScreenPromptText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignTop="@+id/ssidField"
-        android:text="@string/ssid" />
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:text="@string/read_screen_prompt"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/readScreenPromptText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="64dp"
+        android:src="@drawable/contactless" />
 
     <EditText
-        android:id="@+id/passField"
+        android:id="@+id/twoFacPwField"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/passText"
-        android:layout_alignBottom="@+id/passText"
-        android:layout_alignParentRight="true"
-        android:layout_toRightOf="@+id/textView1"
+        android:layout_alignLeft="@+id/readScreenPromptText"
+        android:layout_alignRight="@+id/readScreenTwoFac"
+        android:layout_below="@+id/readScreenTwoFac"
         android:ems="10"
-        android:inputType="textPassword" />
+        android:gravity="center"
+        android:hint="@string/two_fac_pw"
+        android:inputType="textPassword" >
 
-    <TextView
-        android:id="@+id/passText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/ssidText"
-        android:layout_below="@+id/ssidField"
-        android:layout_marginTop="14dp"
-        android:text="@string/password" />
-
-    <EditText
-        android:id="@+id/ssidField"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/passField"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="34dp"
-        android:ems="10"
-        android:inputType="text" />
-
-    <RadioGroup
-        android:id="@+id/radioGroup1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/checkBox1"
-        android:layout_below="@+id/passField"
-        android:layout_marginTop="19dp" >
-
-        <RadioButton
-            android:id="@+id/none"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/none" />
-
-        <RadioButton
-            android:id="@+id/wep"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wep" />
-
-        <RadioButton
-            android:id="@+id/wpa"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wpa" />
-    </RadioGroup>
+    </EditText>
 
     <CheckBox
-        android:id="@+id/checkBox1"
+        android:id="@+id/readScreenTwoFac"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/passText"
-        android:layout_below="@+id/radioGroup1"
-        android:layout_marginTop="15dp"
-        android:text="@string/hidden_network" />
-
-    <ToggleButton
-        android:id="@+id/toggleButton1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/checkBox1"
+        android:layout_below="@+id/readScreenPromptText"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="52dp" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/checkBox1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="35dp"
-        android:text="@string/write_tag" />
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:text="@string/two_fac_auth" />
 
 </RelativeLayout>
