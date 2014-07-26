@@ -32,6 +32,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -65,7 +67,7 @@ public class WriteToTag extends Activity {
 	private boolean writeProtect = false;
 	private boolean isNone, isWEP, isWPA = false;
 	private boolean isTwoFac = false;
-	private CheckBox isTwoFacButton;
+	private CheckBox isTwoFacCheckBox;
 	private EditText twoFacPwField;
 	private EditText routerPwField;
 	private Button pwGenButton;
@@ -102,6 +104,22 @@ public class WriteToTag extends Activity {
 		
 		eap_spinner = (Spinner) findViewById(R.id.eap_spinner);
 		eap_spinner.setSelection(2); // WPA/WPA2 PSK
+		eap_spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+				@Override
+				public void onItemSelected(AdapterView<?> parentView, View selectedView,
+						int position, long id) {
+					if (position == 0) { // if 'None'
+						passField.setVisibility(View.GONE);
+					}
+					else passField.setVisibility(View.VISIBLE);
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> arg0) {
+					
+				}
+		});
 		
 		
 		twoFacLayout = (RelativeLayout) findViewById(R.id.twoFacLayout);
@@ -130,8 +148,8 @@ public class WriteToTag extends Activity {
 			}
 		});
 		
-		isTwoFacButton = (CheckBox) findViewById(R.id.isTwoFactorCheckBox);
-		isTwoFacButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+		isTwoFacCheckBox = (CheckBox) findViewById(R.id.isTwoFactorCheckBox);
+		isTwoFacCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
 				isTwoFac = isChecked;
@@ -216,7 +234,7 @@ public class WriteToTag extends Activity {
 				// check if tag is writable (to the extent that we can
 				if(writableTag(detectedTag)) {
 					//writeTag here
-					WriteResponse wr = writeTag(getTagAsNdef(), detectedTag);
+					WriteResponse wr = writeTag(CreateNdef(), detectedTag);
 					String message = (wr.getStatus() == 1? "Success: " : "Failed: ") + wr.getMessage();
 					Toast.makeText(context,message,Toast.LENGTH_SHORT).show();
 				} else {
@@ -309,135 +327,20 @@ public class WriteToTag extends Activity {
         return false;
     }
     
-    private NdefMessage getTagAsNdef() {
+    private NdefMessage CreateNdef() {
     	
 		String uniqueId = ssidField.getText().toString();
 		String currentPass = passField.getText().toString();
+		String secondaryPassword = twoFacPwField.getText().toString();
+		int keymgmt = eap_spinner.getSelectedItemPosition();
+		ConfigSerialization confSerialization = new ConfigSerialization(uniqueId, currentPass, secondaryPassword, isTwoFac, isHidden, keymgmt);
+		NdefMessage ndef = confSerialization.toNdefMessage();
 		
-		if(!currentPass.isEmpty()){
-			uniqueId += ":" + currentPass;
-		}
-		
-		WifiConfiguration config = ConfigureWifi(uniqueId, currentPass);
-		
-		Parcel parcel = Parcel.obtain();
-		config.writeToParcel(parcel, 0);
-		
-		ByteArrayOutputStream b = new ByteArrayOutputStream();
-        ObjectOutputStream o = null;
-		try {
-			o = new ObjectOutputStream(b);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        try {
-			o.writeObject(parcel);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-      
-		byte[] bytes = parcel.marshall();
-		parcel.recycle();
-		
-//		byte[] SSID = uniqueId.getBytes(Charset.forName("US-ASCII"));
-//		byte[] payload = new byte[SSID.length + 1];
-//		payload[0] = 0x01;
-
-		NdefRecord rtdTextRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
-				NdefRecord.RTD_TEXT, new byte[0], bytes);
-
-		return new NdefMessage(new NdefRecord[] { rtdTextRecord });
+		return ndef;
 
 	}
     
-	private static void writeBitSet(Parcel dest, BitSet set) {
-		int nextSetBit = -1;
-		
-		dest.writeInt(set.cardinality());
-		
-		while ((nextSetBit = set.nextSetBit(nextSetBit + 1)) != -1)
-					dest.writeInt(nextSetBit);
-	}
-    
-    public WifiConfiguration ConfigureWifi(String ssid, String password) {
-		
-		WifiConfiguration conf = new WifiConfiguration() {
-//			@Override
-//			public void writeToParcel(Parcel dest, int flags) {
-//				dest.writeInt(networkId);
-//				dest.writeInt(status);
-//				dest.writeString(SSID);
-//				dest.writeString(BSSID);
-//				dest.writeString(preSharedKey);
-//				for (String wepKey : wepKeys)
-//					dest.writeString(wepKey);
-//				dest.writeInt(wepTxKeyIndex);
-//				dest.writeInt(priority);
-//				dest.writeInt(hiddenSSID ? 1 : 0);
-//				
-//				writeBitSet(dest, allowedKeyManagement);
-//				writeBitSet(dest, allowedProtocols);
-//				writeBitSet(dest, allowedAuthAlgorithms);
-//				writeBitSet(dest, allowedPairwiseCiphers);
-//				writeBitSet(dest, allowedGroupCiphers);
-//			}
-		};
-		
-		conf.SSID = "\"" + ssid + "\"";
-		conf.status = WifiConfiguration.Status.ENABLED;
-
-		eap_val = eap_spinner.getSelectedItem().toString();
-		
-		if (eap_val == "None")
-			isNone = true;
-		else if (eap_val == "WEP")
-			isWEP = true;
-		else if (eap_val == "WPA/WPA2 PSK")
-			isWPA = true;
-		
-		if(isNone || passField.getText().toString().isEmpty()) {
-			//For open networks
-			conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-			conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-		}
-		else if(isWEP || isWPA) {
-			conf.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-			conf.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
-			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-			
-			if(isWEP){		
-				//For WEP networks							
-				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
-				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-
-				conf.wepKeys[0] = "\"".concat(password).concat("\"");
-				conf.wepTxKeyIndex = 0;
-			}
-			else if(isWPA){
-				//For WPA and WPA2 networks
-				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-
-				conf.preSharedKey = "\"" + password + "\"";
-			}						
-		}
-		
-		//For hidden networks
-		if(isHidden)
-			conf.hiddenSSID = true;
-
-		return conf;
-	}
-
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 

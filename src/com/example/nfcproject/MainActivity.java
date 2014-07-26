@@ -147,33 +147,17 @@ public class MainActivity extends Activity {
 			}
 			if (messages[0] != null) {
 				String result = "";
-				byte[] payload = messages[0].getRecords()[0].getPayload();
+				//byte[] payload = messages[0].getRecords()[0].getPayload();
 				
-				Parcel parcel = Parcel.obtain();
-		        parcel.unmarshall(payload, 0, payload.length);
-		        parcel.setDataPosition(0);
-		        WifiConfiguration conf = parcel.readParcelable(WifiConfiguration.class.getClassLoader());
-		        parcel.recycle();
+		        ConfigSerialization confReadSerializer = new ConfigSerialization(messages[0]);
+		        WifiConfiguration conf = confReadSerializer.toWifiConfig();
 		        
 				
 				// this assumes that we get back am SOH followed by host/code
-				for (int b = 0; b < payload.length; b++) { // skip SOH
-					result += (char) payload[b];
-				}
+//				for (int b = 0; b < payload.length; b++) { // skip SOH
+//					result += (char) payload[b];
+//				}
 
-				//Split result by ":" for "ssid:password"
-				String ssid = "";
-				String password = "";
-				if(result.contains(":")){
-					ssid = result.split(":")[0];
-
-					if(result.split(":").length > 0)
-						password = result.split(":")[1];
-				}
-				else
-					ssid = result;
-				
-				//WifiConfiguration conf = ConfigureWifi(ssid, password);
 				
 				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE); 
 				
@@ -190,60 +174,7 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
-	
-//	public static WifiConfiguration UnmarshallPackage(byte[] bytes) {
-//		Parcel parcel = Parcel.obtain();
-//		parcel.unmarshall(bytes, 0, bytes.length);
-//		parcel.setDataPosition(0);
-//	}
-	
-//	public WifiConfiguration ConfigureWifi(String ssid, String password) {
-//		
-//		WifiConfiguration conf = new WifiConfiguration();
-//		conf.SSID = "\"" + ssid + "\"";
-//		conf.status = WifiConfiguration.Status.ENABLED;
-//
-//		
-//		if(isNone || passField.getText().toString().isEmpty()) {
-//			//For open networks
-//			conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-//			conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-//		}
-//		else if(isWEP || isWPA) {
-//			conf.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-//			conf.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
-//			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-//			conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-//			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-//			conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-//			
-//			if(isWEP){		
-//				//For WEP networks							
-//				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-//				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-//				conf.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
-//				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-//				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-//
-//				conf.wepKeys[0] = "\"".concat(password).concat("\"");
-//				conf.wepTxKeyIndex = 0;
-//			}
-//			else if(isWPA){
-//				//For WPA and WPA2 networks
-//				conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-//				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-//				conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-//
-//				conf.preSharedKey = "\"" + password + "\"";
-//			}						
-//		}
-//		
-//		//For hidden networks
-//		if(isHidden)
-//			conf.hiddenSSID = true;
-//
-//		return conf;
-//	}
+
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

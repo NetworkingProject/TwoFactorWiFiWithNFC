@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import android.net.wifi.WifiConfiguration;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -32,10 +33,15 @@ public class ConfigSerialization implements Parcelable {
     public ConfigSerialization(NdefMessage ndefMessage) {
         byte[] bytes = ndefMessage.toByteArray();
         Parcel parcel = Parcel.obtain();
-        parcel.readByteArray(bytes);
+//        parcel.readByteArray(bytes);
+        parcel.unmarshall(bytes, 0, bytes.length);
+        parcel.setDataPosition(0);
         try {
             parcel.readValue(ConfigSerialization.class.getClassLoader());
-        } finally {
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        finally {
             parcel.recycle();
         }
 
@@ -147,14 +153,20 @@ public class ConfigSerialization implements Parcelable {
         NdefMessage message = null;
         Parcel parcel = Parcel.obtain();
         this.writeToParcel(parcel, 0);
-        byte[] parcelByteArray = parcel.createByteArray();
+        byte[] temp = parcel.marshall();
+        byte[] parcelByteArray = new byte[1 + temp.length];
+        parcelByteArray[0] = 0x01;
+        System.arraycopy(temp, 0, parcelByteArray, 1, temp.length);
 
+        NdefRecord rtdTextRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
+				NdefRecord.RTD_TEXT, new byte[0], parcelByteArray);
+
+		new NdefMessage(new NdefRecord[] { rtdTextRecord });
+		
         try {
-            message = new NdefMessage(parcelByteArray);
-        } catch (FormatException e) {
-            // barf
-            e.printStackTrace();
-        } finally {
+            message = new NdefMessage(new NdefRecord[] { rtdTextRecord });
+        }
+        finally {
             parcel.recycle();
         }
 
