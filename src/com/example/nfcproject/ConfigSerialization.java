@@ -1,5 +1,8 @@
 package com.example.nfcproject;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+
 import android.net.wifi.WifiConfiguration;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
@@ -79,7 +82,7 @@ public class ConfigSerialization implements Parcelable {
 
     public WifiConfiguration toWifiConfig() {
         WifiConfiguration conf = new WifiConfiguration();
-        String passwordForConfig;
+        String passwordForConfig = null;
 
         boolean isOpen = this.keyManagement == WifiConfiguration.KeyMgmt.NONE && this.password.isEmpty();
         boolean isWEP = this.keyManagement == WifiConfiguration.KeyMgmt.NONE && (!this.password.isEmpty());
@@ -89,7 +92,15 @@ public class ConfigSerialization implements Parcelable {
         conf.status = WifiConfiguration.Status.ENABLED;
 
         if (isTwoFactor) {
-            passwordForConfig = "HASH THE TWO PASSWORDS TOGETHER";
+            try {
+                passwordForConfig = Hashing.passwordToSHA256(this.password, this.secondaryPassword);
+            } catch (NoSuchAlgorithmException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         } else {
             passwordForConfig = this.password;
         }
