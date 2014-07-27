@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 
 import android.net.wifi.WifiConfiguration;
-import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.os.Parcel;
@@ -46,6 +45,15 @@ public class ConfigSerialization implements Parcelable {
         }
 
     }
+    
+    public ConfigSerialization(Parcel in) {
+    	 SSID = in.readString();
+         isHidden = in.readByte() != 0;
+         isTwoFactor = in.readByte() != 0;
+         password = in.readString();
+         secondaryPassword = in.readString();
+         keyManagement = in.readByte();
+    }
 
     @Override
     public int describeContents() {
@@ -55,7 +63,6 @@ public class ConfigSerialization implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(SSID);
-        dest.writeInt(isHidden ? 1 : 0);
         dest.writeByte((byte) (isHidden ? 1 : 0));
         dest.writeByte((byte) (isTwoFactor ? 1 : 0));
         dest.writeString(password);
@@ -67,21 +74,13 @@ public class ConfigSerialization implements Parcelable {
     public static final Creator<ConfigSerialization> CREATOR = new Creator<ConfigSerialization>() {
         @Override
         public ConfigSerialization createFromParcel(Parcel in) {
-            String SSID = in.readString();
-            boolean isHidden = in.readByte() != 0;
-            boolean isTwoFactor = in.readByte() != 0;
-            String password = in.readString();
-            String secondaryPassword = in.readString();
-            int keyManagement = in.readByte();
-
-            ConfigSerialization config = new ConfigSerialization(SSID, password, secondaryPassword, isTwoFactor, isHidden, keyManagement);
-            return config;
+            return new ConfigSerialization(in);
         }
 
         @Override
         public ConfigSerialization[] newArray(int size) {
             // TODO Auto-generated method stub
-            return null;
+            return new ConfigSerialization[size];
         }
 
     };

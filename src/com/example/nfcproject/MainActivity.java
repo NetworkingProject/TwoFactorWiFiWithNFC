@@ -146,18 +146,9 @@ public class MainActivity extends Activity {
 				}
 			}
 			if (messages[0] != null) {
-				String result = "";
-				//byte[] payload = messages[0].getRecords()[0].getPayload();
 				
 		        ConfigSerialization confReadSerializer = new ConfigSerialization(messages[0]);
 		        WifiConfiguration conf = confReadSerializer.toWifiConfig();
-		        
-				
-				// this assumes that we get back am SOH followed by host/code
-//				for (int b = 0; b < payload.length; b++) { // skip SOH
-//					result += (char) payload[b];
-//				}
-
 				
 				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE); 
 				
@@ -169,7 +160,7 @@ public class MainActivity extends Activity {
 				// Returns true on success
 				wifiManager.reconnect();
 
-				Toast.makeText(context,"Tag Contains " + result, Toast.LENGTH_SHORT).show();
+				Toast.makeText(context,"Connecting to " + confReadSerializer.SSID, Toast.LENGTH_SHORT).show();
 
 			}
 		}
