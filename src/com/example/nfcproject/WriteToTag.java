@@ -321,6 +321,7 @@ public class WriteToTag extends Activity {
 		String currentPass = passField.getText().toString();
 		String secondaryPassword = twoFacPwField.getText().toString();
 		int keymgmt = eap_spinner.getSelectedItemPosition();
+
 		ConfigSerialization confSerialization = new ConfigSerialization(uniqueId, currentPass, secondaryPassword, isTwoFac, isHidden, keymgmt);
 		NdefMessage ndef = null;
         ndef = confSerialization.toNdefMessage();

@@ -88,9 +88,15 @@ public class ConfigSerialization implements Parcelable {
         WifiConfiguration conf = new WifiConfiguration();
         String passwordForConfig = null;
 
-        boolean isOpen = this.keyManagement == WifiConfiguration.KeyMgmt.NONE && this.password.isEmpty();
-        boolean isWEP = this.keyManagement == WifiConfiguration.KeyMgmt.NONE && (!this.password.isEmpty());
-        boolean isWPA = this.keyManagement == WifiConfiguration.KeyMgmt.WPA_PSK;
+        // Good ole hardcoded values here, nothing to see move along
+        // <item>None</item>
+        // <item>WEP</item>
+        // <item>WPA/WPA2 PSK</item>
+        // <item>802.1x EAP</item>
+
+        boolean isOpen = this.keyManagement == 0 && this.password.isEmpty();
+        boolean isWEP = (this.keyManagement ==  1);
+        boolean isWPA = (this.keyManagement == 2);
 
         conf.SSID = this.SSID;
         conf.status = WifiConfiguration.Status.ENABLED;
