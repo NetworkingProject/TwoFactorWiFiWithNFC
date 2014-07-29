@@ -45,7 +45,7 @@ public class ConfigSerialization implements Parcelable {
         }
 
     }
-    
+
     public ConfigSerialization(Parcel in) {
     	 SSID = in.readString();
          isHidden = in.readByte() != 0;
@@ -161,7 +161,7 @@ public class ConfigSerialization implements Parcelable {
 				NdefRecord.RTD_TEXT, new byte[0], parcelByteArray);
 
 		new NdefMessage(new NdefRecord[] { rtdTextRecord });
-		
+
         try {
             message = new NdefMessage(new NdefRecord[] { rtdTextRecord });
         }
