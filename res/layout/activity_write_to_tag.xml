@@ -76,14 +76,14 @@
 
         <EditText
             android:id="@+id/router_pw_field"
+            android:inputType="textMultiLine"
             android:layout_width="234dp"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/copy_button"
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/copy_button"
             android:ems="10"
-            android:hint="@string/router_pw_prompt"
-            android:inputType="textPassword" />
+            android:hint="@string/router_pw_prompt" />
 
         <ImageButton
             android:id="@+id/copy_button"

@@ -12,18 +12,16 @@ import android.os.Parcelable;
 public class ConfigSerialization implements Parcelable {
     public String SSID;
     public String password;
-    public String secondaryPassword;
     public boolean isTwoFactor;
     public boolean isHidden;
     public int keyManagement; // This is 0-3
 
     // With Secondary Password
     public ConfigSerialization(String sSID, String password,
-            String secondaryPassword, boolean isTwoFactor, boolean isHidden,
+            boolean isTwoFactor, boolean isHidden,
             int keyMangement) {
         this.SSID = sSID;
         this.password = password;
-        this.secondaryPassword = secondaryPassword;
         this.isTwoFactor = isTwoFactor;
         this.isHidden = isHidden;
         this.keyManagement = keyMangement;
@@ -50,7 +48,6 @@ public class ConfigSerialization implements Parcelable {
         isHidden = in.readByte() != 0;
         isTwoFactor = in.readByte() != 0;
         password = in.readString();
-        secondaryPassword = in.readString();
         keyManagement = in.readByte();
     }
 
@@ -65,7 +62,6 @@ public class ConfigSerialization implements Parcelable {
         dest.writeByte((byte) (isHidden ? 1 : 0));
         dest.writeByte((byte) (isTwoFactor ? 1 : 0));
         dest.writeString(password);
-        dest.writeString(secondaryPassword);
         dest.writeByte((byte) keyManagement);
     }
 
@@ -78,16 +74,15 @@ public class ConfigSerialization implements Parcelable {
 
         @Override
         public ConfigSerialization[] newArray(int size) {
-            // TODO Auto-generated method stub
             return new ConfigSerialization[size];
         }
 
     };
 
-    public WifiConfiguration toWifiConfig() {
+    public WifiConfiguration toWifiConfig(String secondaryPassword) {
         WifiConfiguration conf = new WifiConfiguration();
         String passwordForConfig = null;
-
+        
         // Good ole hardcoded values here, nothing to see move along
         // <item>None</item>
         // <item>WEP</item>
@@ -103,7 +98,7 @@ public class ConfigSerialization implements Parcelable {
 
         if (isTwoFactor) {
             try {
-                passwordForConfig = Hashing.passwordToSHA256(this.password, this.secondaryPassword);
+                passwordForConfig = Hashing.passwordToSHA256(this.password, secondaryPassword);
             } catch (NoSuchAlgorithmException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

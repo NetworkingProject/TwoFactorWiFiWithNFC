@@ -1,6 +1,8 @@
 package com.example.nfcproject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -111,7 +113,29 @@ public class WriteToTag extends Activity {
 		twoFacLayout.setVisibility(View.GONE);
 		twoFacPwField = (EditText) findViewById(R.id.two_fac_pw_field);
 		routerPwField = (EditText) findViewById(R.id.router_pw_field);
+		
 		pwGenButton = (Button) findViewById(R.id.pw_gen_button);
+		pwGenButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				String currentPass = passField.toString();
+				String currentTwoFac = twoFacPwField.toString();
+				String newRouterPass = null;
+				try {
+					newRouterPass = Hashing.passwordToSHA256(currentPass, currentTwoFac);
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				routerPwField.setText(newRouterPass);
+			}
+		});
+		
 		copyButton = (ImageButton) findViewById(R.id.copy_button);
 		copyButton.setOnClickListener(new View.OnClickListener() {
 
@@ -322,7 +346,7 @@ public class WriteToTag extends Activity {
 		String secondaryPassword = twoFacPwField.getText().toString();
 		int keymgmt = eap_spinner.getSelectedItemPosition();
 
-		ConfigSerialization confSerialization = new ConfigSerialization(uniqueId, currentPass, secondaryPassword, isTwoFac, isHidden, keymgmt);
+		ConfigSerialization confSerialization = new ConfigSerialization(uniqueId, currentPass, isTwoFac, isHidden, keymgmt);
 		NdefMessage ndef = null;
         ndef = confSerialization.toNdefMessage();
 		return ndef;

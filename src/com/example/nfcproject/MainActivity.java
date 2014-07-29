@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -32,7 +33,7 @@ public class MainActivity extends Activity {
 	private boolean isTwoFac = false;
 	private Context context;
 	private CheckBox isTwoFacCheckBox;
-
+	private EditText twoFacPassField;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -66,7 +67,8 @@ public class MainActivity extends Activity {
 				isTwoFac = isChecked;
 			}
 		});
-
+		
+		twoFacPassField = (EditText) findViewById(R.id.twoFacPwField);
 	}
 
 	@Override
@@ -139,17 +141,25 @@ public class MainActivity extends Activity {
 			    byte[] bytes = record.getPayload();
 
 		        ConfigSerialization confReadSerializer = ParcelableUtil.unmarshall(bytes, ConfigSerialization.CREATOR);
-		        WifiConfiguration conf = confReadSerializer.toWifiConfig();
+		        if (confReadSerializer.isTwoFactor && isTwoFac == false) {
+		        	Toast.makeText(context, "Please provide two-factor password", Toast.LENGTH_SHORT).show();
+		        	return;
+		        }
+		        
+		        WifiConfiguration conf = confReadSerializer.toWifiConfig(twoFacPassField.toString());
 
 				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 
-				// TODO: Returns -1 on failure. Add error handling.
 				int networkId = wifiManager.addNetwork(conf);
 
-				// TODO: Returns -1 on failure. Add error handling.
-				wifiManager.enableNetwork(networkId, true);
-				// Returns true on success
-				wifiManager.reconnect();
+				boolean enableSuccess = wifiManager.enableNetwork(networkId, true);
+
+				boolean reconnectSuccess = wifiManager.reconnect();
+				
+				if (!reconnectSuccess || networkId == -1 || !enableSuccess) {
+					Toast.makeText(context,"Failed to connect to network", Toast.LENGTH_SHORT).show();
+					return;
+				}
 
 				Toast.makeText(context,"Connecting to " + confReadSerializer.SSID, Toast.LENGTH_SHORT).show();
 
