@@ -150,6 +150,7 @@ public class MainActivity extends Activity {
 
 				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 
+				// Returns -1 on failure
 				int networkId = wifiManager.addNetwork(conf);
 
 				boolean enableSuccess = wifiManager.enableNetwork(networkId, true);
