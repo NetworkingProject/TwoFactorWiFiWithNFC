@@ -98,7 +98,7 @@ public class ConfigSerialization implements Parcelable {
         boolean isWEP = (this.keyManagement ==  1);
         boolean isWPA = (this.keyManagement == 2);
 
-        conf.SSID = this.SSID;
+        conf.SSID = "\"" + this.SSID + "\"";
         conf.status = WifiConfiguration.Status.ENABLED;
 
         if (isTwoFactor) {
