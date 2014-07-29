@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -134,7 +135,9 @@ public class MainActivity extends Activity {
 				}
 			}
 			if (messages[0] != null) {
-			    byte[] bytes = messages[0].toByteArray();
+                NdefRecord record = messages[0].getRecords()[0];
+			    byte[] bytes = record.getPayload();
+
 		        ConfigSerialization confReadSerializer = ParcelableUtil.unmarshall(bytes, ConfigSerialization.CREATOR);
 		        WifiConfiguration conf = confReadSerializer.toWifiConfig();
 

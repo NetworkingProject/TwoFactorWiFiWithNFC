@@ -32,27 +32,26 @@ public class ConfigSerialization implements Parcelable {
     public ConfigSerialization(NdefMessage ndefMessage) {
         byte[] bytes = ndefMessage.toByteArray();
         Parcel parcel = Parcel.obtain();
-//        parcel.readByteArray(bytes);
+        // parcel.readByteArray(bytes);
         parcel.unmarshall(bytes, 0, bytes.length);
         parcel.setDataPosition(0);
         try {
             parcel.readValue(ConfigSerialization.class.getClassLoader());
         } catch (Exception e) {
-        	e.printStackTrace();
-        }
-        finally {
+            e.printStackTrace();
+        } finally {
             parcel.recycle();
         }
 
     }
 
     public ConfigSerialization(Parcel in) {
-    	 SSID = in.readString();
-         isHidden = in.readByte() != 0;
-         isTwoFactor = in.readByte() != 0;
-         password = in.readString();
-         secondaryPassword = in.readString();
-         keyManagement = in.readByte();
+        SSID = in.readString();
+        isHidden = in.readByte() != 0;
+        isTwoFactor = in.readByte() != 0;
+        password = in.readString();
+        secondaryPassword = in.readString();
+        keyManagement = in.readByte();
     }
 
     @Override
@@ -150,24 +149,12 @@ public class ConfigSerialization implements Parcelable {
 
     public NdefMessage toNdefMessage() {
         NdefMessage message = null;
-        Parcel parcel = Parcel.obtain();
-        this.writeToParcel(parcel, 0);
-        byte[] temp = parcel.marshall();
-        byte[] parcelByteArray = new byte[1 + temp.length];
-        parcelByteArray[0] = 0x01;
-        System.arraycopy(temp, 0, parcelByteArray, 1, temp.length);
 
-        NdefRecord rtdTextRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
-				NdefRecord.RTD_TEXT, new byte[0], parcelByteArray);
+        byte[] parcelByteArray = ParcelableUtil.marshall(this);
 
-		new NdefMessage(new NdefRecord[] { rtdTextRecord });
+        NdefRecord rtdTextRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], parcelByteArray);
 
-        try {
-            message = new NdefMessage(new NdefRecord[] { rtdTextRecord });
-        }
-        finally {
-            parcel.recycle();
-        }
+        message = new NdefMessage(new NdefRecord[] { rtdTextRecord });
 
         return message;
     }
