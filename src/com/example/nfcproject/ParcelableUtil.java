@@ -19,7 +19,8 @@ public class ParcelableUtil {
     }
 
     /**
-     * Note: this creates a Parcel which the caller is responsible for recycling!
+     * Note: this creates a Parcel which the caller is responsible for
+     * recycling!
      */
     public static Parcel unmarshall(byte[] bytes) {
         Parcel parcel = Parcel.obtain();

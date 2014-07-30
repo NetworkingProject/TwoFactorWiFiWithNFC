@@ -18,8 +18,7 @@ public class ConfigSerialization implements Parcelable {
 
     // With Secondary Password
     public ConfigSerialization(String sSID, String password,
-            boolean isTwoFactor, boolean isHidden,
-            int keyMangement) {
+            boolean isTwoFactor, boolean isHidden, int keyMangement) {
         this.SSID = sSID;
         this.password = password;
         this.isTwoFactor = isTwoFactor;
@@ -82,7 +81,7 @@ public class ConfigSerialization implements Parcelable {
     public WifiConfiguration toWifiConfig(String secondaryPassword) {
         WifiConfiguration conf = new WifiConfiguration();
         String passwordForConfig = null;
-        
+
         // Good ole hardcoded values here, nothing to see move along
         // <item>None</item>
         // <item>WEP</item>
@@ -90,7 +89,7 @@ public class ConfigSerialization implements Parcelable {
         // <item>802.1x EAP</item>
 
         boolean isOpen = this.keyManagement == 0 && this.password.isEmpty();
-        boolean isWEP = (this.keyManagement ==  1);
+        boolean isWEP = (this.keyManagement == 1);
         boolean isWPA = (this.keyManagement == 2);
 
         conf.SSID = "\"" + this.SSID + "\"";

@@ -26,31 +26,29 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
-	private NfcAdapter mNfcAdapter;
+    private NfcAdapter mNfcAdapter;
     private IntentFilter[] mWriteTagFilters;
-	private PendingIntent mNfcPendingIntent;
-	private final boolean isWrite = false;
-	private boolean isTwoFac = false;
-	private Context context;
-	private CheckBox isTwoFacCheckBox;
-	private EditText twoFacPassField;
+    private PendingIntent mNfcPendingIntent;
+    private final boolean isWrite = false;
+    private boolean isTwoFac = false;
+    private Context context;
+    private CheckBox isTwoFacCheckBox;
+    private EditText twoFacPassField;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
 
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-		// For Toast and WiFi Manager
-		context = getApplicationContext();
+        // For Toast and WiFi Manager
+        context = getApplicationContext();
 
-		Intent intent = new Intent(this,
-				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP
-						| Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Intent intent = new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-		mNfcPendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        mNfcPendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         IntentFilter discovery = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
         IntentFilter ndefDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
@@ -59,134 +57,121 @@ public class MainActivity extends Activity {
         // Intent filters for writing to a tag
         mWriteTagFilters = new IntentFilter[] { ndefDetected, discovery, techDetected };
 
-		isTwoFacCheckBox = (CheckBox) findViewById(R.id.readScreenTwoFac);
-		isTwoFacCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        isTwoFacCheckBox = (CheckBox) findViewById(R.id.readScreenTwoFac);
+        isTwoFacCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-			@Override
-			public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-				isTwoFac = isChecked;
-			}
-		});
-		
-		twoFacPassField = (EditText) findViewById(R.id.twoFacPwField);
-	}
+            @Override
+            public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
+                isTwoFac = isChecked;
+            }
+        });
 
-	@Override
-	protected void onResume() {
-		super.onResume();
+        twoFacPassField = (EditText) findViewById(R.id.twoFacPwField);
+    }
 
-		if (mNfcAdapter != null) {
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-			if (!mNfcAdapter.isEnabled()) {
-				LayoutInflater inflater = getLayoutInflater();
-				View dialoglayout = inflater.inflate(R.layout.activity_main,
-						(ViewGroup) findViewById(R.id.nfc_settings_layout));
-				new AlertDialog.Builder(this)
-						.setView(dialoglayout)
-						.setPositiveButton("Update Settings",
-								new DialogInterface.OnClickListener() {
-									@Override
-                                    public void onClick(DialogInterface arg0,
-											int arg1) {
-										Intent setnfc = new Intent(
-												Settings.ACTION_WIRELESS_SETTINGS);
-										startActivity(setnfc);
-									}
-								})
-						.setOnCancelListener(
-								new DialogInterface.OnCancelListener() {
-									@Override
-                                    public void onCancel(DialogInterface dialog) {
-										System.out.println("cancel");
-										finish(); // exit application if user
-													// cancels
-									}
-								}).create().show();
-			}
-			mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent,
-					mWriteTagFilters, null);
-		} else {
-			mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent,
-					mWriteTagFilters, null);
-			Toast.makeText(context,
-					"Sorry, No NFC Adapter found.", Toast.LENGTH_SHORT).show();
-		}
-	}
+        if (mNfcAdapter != null) {
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (mNfcAdapter != null)
-			mNfcAdapter.disableForegroundDispatch(this);
-	}
+            if (!mNfcAdapter.isEnabled()) {
+                LayoutInflater inflater = getLayoutInflater();
+                View dialoglayout = inflater.inflate(R.layout.activity_main, (ViewGroup) findViewById(R.id.nfc_settings_layout));
+                new AlertDialog.Builder(this).setView(dialoglayout).setPositiveButton("Update Settings", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        Intent setnfc = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                        startActivity(setnfc);
+                    }
+                }).setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        System.out.println("cancel");
+                        finish(); // exit application if user
+                                  // cancels
+                    }
+                }).create().show();
+            }
+            mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mWriteTagFilters, null);
+        } else {
+            mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mWriteTagFilters, null);
+            Toast.makeText(context, "Sorry, No NFC Adapter found.", Toast.LENGTH_SHORT).show();
+        }
+    }
 
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mNfcAdapter != null)
+            mNfcAdapter.disableForegroundDispatch(this);
+    }
 
-		// Read and parse tag
-		if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
 
-			NdefMessage[] messages = null;
-			Parcelable[] rawMsgs = intent
-					.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-			if (rawMsgs != null) {
-				messages = new NdefMessage[rawMsgs.length];
-				for (int i = 0; i < rawMsgs.length; i++) {
-					messages[i] = (NdefMessage) rawMsgs[i];
-				}
-			}
-			if (messages[0] != null) {
+        // Read and parse tag
+        if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
+
+            NdefMessage[] messages = null;
+            Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+            if (rawMsgs != null) {
+                messages = new NdefMessage[rawMsgs.length];
+                for (int i = 0; i < rawMsgs.length; i++) {
+                    messages[i] = (NdefMessage) rawMsgs[i];
+                }
+            }
+            if (messages[0] != null) {
                 NdefRecord record = messages[0].getRecords()[0];
-			    byte[] bytes = record.getPayload();
+                byte[] bytes = record.getPayload();
 
-		        ConfigSerialization confReadSerializer = ParcelableUtil.unmarshall(bytes, ConfigSerialization.CREATOR);
-		        if (confReadSerializer.isTwoFactor && isTwoFac == false) {
-		        	Toast.makeText(context, "Please provide two-factor password", Toast.LENGTH_SHORT).show();
-		        	return;
-		        }
-		        
-		        WifiConfiguration conf = confReadSerializer.toWifiConfig(twoFacPassField.toString());
+                ConfigSerialization confReadSerializer = ParcelableUtil.unmarshall(bytes, ConfigSerialization.CREATOR);
+                if (confReadSerializer.isTwoFactor && isTwoFac == false) {
+                    Toast.makeText(context, "Please provide two-factor password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+                WifiConfiguration conf = confReadSerializer.toWifiConfig(twoFacPassField.toString());
 
-				// Returns -1 on failure
-				int networkId = wifiManager.addNetwork(conf);
+                WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 
-				boolean enableSuccess = wifiManager.enableNetwork(networkId, true);
+                // Returns -1 on failure
+                int networkId = wifiManager.addNetwork(conf);
 
-				boolean reconnectSuccess = wifiManager.reconnect();
-				
-				if (!reconnectSuccess || networkId == -1 || !enableSuccess) {
-					Toast.makeText(context,"Failed to connect to network", Toast.LENGTH_SHORT).show();
-					return;
-				}
+                boolean enableSuccess = wifiManager.enableNetwork(networkId, true);
 
-				Toast.makeText(context,"Connecting to " + confReadSerializer.SSID, Toast.LENGTH_SHORT).show();
+                boolean reconnectSuccess = wifiManager.reconnect();
 
-			}
-		}
-	}
+                if (!reconnectSuccess || networkId == -1 || !enableSuccess) {
+                    Toast.makeText(context, "Failed to connect to network", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
+                Toast.makeText(context, "Connecting to " + confReadSerializer.SSID, Toast.LENGTH_SHORT).show();
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
+            }
+        }
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
-	    switch(item.getItemId()){
-	    case R.id.action_admin:
-	        Intent intent = new Intent(MainActivity.this, WriteToTag.class);
-	        startActivity(intent);
-	        return true;
-	    case R.id.action_settings:
-	        // TODO: Add settings menu or remove menu
-	        return true;
-	    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
-	    return false;
-	}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.action_admin:
+            Intent intent = new Intent(MainActivity.this, WriteToTag.class);
+            startActivity(intent);
+            return true;
+        case R.id.action_settings:
+            // TODO: Add settings menu or remove menu
+            return true;
+        }
+
+        return false;
+    }
 }
